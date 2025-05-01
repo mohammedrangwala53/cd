@@ -1,0 +1,64 @@
+%{
+#include <stdio.h>
+#include <string.h>
+#define MAX 100
+
+typedef struct {
+  char type[20];
+  char lexeme[200];
+} Token;
+
+Token tokens[MAX];
+int token_count = 0;
+int vowels = 0, consonants = 0;
+
+void add_tokens(const char* type, const char* lexeme) {
+    if (token_count < MAX) {
+        strcpy(tokens[token_count].type, type);
+        strcpy(tokens[token_count].lexeme, lexeme);
+        token_count++;
+    }
+}
+%}
+
+%option noyywrap
+
+VOWEL      [aeiouAEIOU]
+CONSONANT  [b-df-hj-np-tv-zB-DF-HJ-NP-TV-Z]
+
+%%
+
+{VOWEL}     { add_tokens("vowel", yytext); vowels++; }
+{CONSONANT} { add_tokens("consonant", yytext); consonants++; }
+[ \t\n0-9.,;!?] ;
+.           ;
+
+%%
+
+int main(int argc, char* argv[]) {
+    if (argc < 2) {
+        printf("Usage: %s <filename>\n", argv[0]);
+        return 1;
+    }
+
+    FILE *fp = fopen(argv[1], "r");
+    if (!fp) {
+        perror("File open error");
+        return 1;
+    }
+
+    yyin = fp;
+    yylex();
+    fclose(fp);
+
+    printf("\n--- Vowels and Consonants ---\n");
+    printf("%-15s | %-15s\n", "Type", "Lexeme");
+    printf("---------------+----------------\n");
+    for (int i = 0; i < token_count; ++i) {
+        printf("%-15s | %-15s\n", tokens[i].type, tokens[i].lexeme);
+    }
+
+    printf("\nTotal Vowels: %d\n", vowels);
+    printf("Total Consonants: %d\n", consonants);
+    return 0;
+}

@@ -1,0 +1,37 @@
+%{
+#include <stdio.h>
+#include <string.h>
+int words = 0;
+%}
+
+%option noyywrap
+
+WORD     [a-zA-Z0-9_]+
+
+%%
+
+{WORD}    { words++; }
+[ \t\n.,;!?] ;
+. ;
+
+%%
+
+int main(int argc, char* argv[]) {
+    if (argc < 2) {
+        printf("Usage: %s <filename>\n", argv[0]);
+        return 1;
+    }
+
+    FILE *fp = fopen(argv[1], "r");
+    if (!fp) {
+        perror("File open error");
+        return 1;
+    }
+
+    yyin = fp;
+    yylex();
+    fclose(fp);
+
+    printf("Total words: %d\n", words);
+    return 0;
+}
