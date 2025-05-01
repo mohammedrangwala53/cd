@@ -5,7 +5,7 @@
 #include <string.h>
 
 // ─────── Feature toggles ──────────────────────────────────────────
-// Uncomment only the metrics you want
+// Everything is enabled below
 #define COUNT_LINES
 #define COUNT_WORDS
 #define COUNT_CHARS
@@ -13,7 +13,6 @@
 #define COUNT_CONSONANTS
 #define COUNT_COMMENTS
 
-// Uncomment one conversion mode if you want to see converted text
 #define CONVERT_UPPER
 // #define CONVERT_LOWER
 // ──────────────────────────────────────────────────────────────────
