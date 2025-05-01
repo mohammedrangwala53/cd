@@ -1,0 +1,4 @@
+SELECT name, age FROM users WHERE age > 30;
+INSERT INTO users (name, age) VALUES ('Alice', 25);
+UPDATE users SET name = 'Bob' WHERE id = 1;
+DELETE FROM users WHERE name = 'Eve';
