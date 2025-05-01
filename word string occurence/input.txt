@@ -1,0 +1,3 @@
+This is an example input file.
+The example should be counted.
+Another example example.
