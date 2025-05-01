@@ -1,0 +1,64 @@
+%{
+#include <stdio.h>
+#include <string.h>
+#define MAX 100
+
+typedef struct {
+  char type[20];
+  char lexeme[200];
+} Token;
+
+Token tokens[MAX];
+int token_count = 0;
+int single = 0, double_letter = 0;
+
+void add_tokens(const char* type, const char* lexeme) {
+    if (token_count < MAX) {
+        strcpy(tokens[token_count].type, type);
+        strcpy(tokens[token_count].lexeme, lexeme);
+        token_count++;
+    }
+}
+%}
+
+%option noyywrap
+
+SINGLE    [a-zA-Z]
+DOUBLE    [a-zA-Z]{2}
+
+%%
+
+{DOUBLE}   { add_tokens("double-letter", yytext); double_letter++; }
+{SINGLE}   { add_tokens("single-letter", yytext); single++; }
+[ \t\n.,;!?] ;
+.           ;
+
+%%
+
+int main(int argc, char* argv[]) {
+    if (argc < 2) {
+        printf("Usage: %s <filename>\n", argv[0]);
+        return 1;
+    }
+
+    FILE *fp = fopen(argv[1], "r");
+    if (!fp) {
+        perror("File open error");
+        return 1;
+    }
+
+    yyin = fp;
+    yylex();
+    fclose(fp);
+
+    printf("\n--- Single and Double Letter Tokens ---\n");
+    printf("%-15s | %-15s\n", "Type", "Lexeme");
+    printf("---------------+----------------\n");
+    for (int i = 0; i < token_count; ++i) {
+        printf("%-15s | %-15s\n", tokens[i].type, tokens[i].lexeme);
+    }
+
+    printf("\nTotal Single Letters: %d\n", single);
+    printf("Total Double Letters: %d\n", double_letter);
+    return 0;
+}
