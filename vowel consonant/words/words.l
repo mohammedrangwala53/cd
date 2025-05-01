@@ -1,98 +1,65 @@
-/* metrics.l */
 %{
 #include <stdio.h>
-#include <ctype.h>
 #include <string.h>
+#define MAX 100
 
-// ─────── Feature toggles ──────────────────────────────────────────
-// Everything is enabled below
-#define COUNT_LINES
-#define COUNT_WORDS
-#define COUNT_CHARS
-#define COUNT_VOWELS
-#define COUNT_CONSONANTS
-#define COUNT_COMMENTS
+typedef struct {
+  char type[20];
+  char lexeme[200];
+} Token;
 
-#define CONVERT_UPPER
-// #define CONVERT_LOWER
-// ──────────────────────────────────────────────────────────────────
+Token tokens[MAX];
+int token_count = 0;
+int vowels = 0, consonants = 0;
 
-int line_count = 0;
-int word_count = 0;
-int char_count = 0;
-int vowel_count = 0;
-int consonant_count = 0;
-int comment_count = 0;
+void add_tokens(const char* type, const char* lexeme) {
+    if (token_count < MAX) {
+        strcpy(tokens[token_count].type, type);
+        strcpy(tokens[token_count].lexeme, lexeme);
+        token_count++;
+    }
+}
 %}
 
 %option noyywrap
 
-%%
-
-#ifdef COUNT_COMMENTS
-"//".*                                { comment_count++; }
-"/*"([^*]|\*+[^*/])*\*+"/"            { comment_count++; }
-#endif
-
-#ifdef COUNT_WORDS
-[a-zA-Z]+                             {
-                                          word_count++;
-    #ifdef COUNT_VOWELS
-        for (int i = 0; yytext[i]; i++) {
-            char c = yytext[i];
-            if (strchr("AEIOUaeiou", c)) vowel_count++;
-            else if (isalpha(c)) consonant_count++;
-        }
-    #endif
-}
-#endif
-
-\n                                     {
-    #ifdef COUNT_LINES
-        line_count++;
-    #endif
-    #ifdef COUNT_CHARS
-        char_count++;
-    #endif
-    #ifdef CONVERT_UPPER
-        putchar('\n');
-    #endif
-    #ifdef CONVERT_LOWER
-        putchar('\n');
-    #endif
-}
-
-.                                      {
-    #ifdef COUNT_CHARS
-        char_count++;
-    #endif
-    #ifdef CONVERT_UPPER
-        putchar(toupper(yytext[0]));
-    #endif
-    #ifdef CONVERT_LOWER
-        putchar(tolower(yytext[0]));
-    #endif
-}
+VOWEL      [aeiouAEIOU]
+CONSONANT  [b-df-hj-np-tv-zB-DF-HJ-NP-TV-Z]
 
 %%
 
-int main() {
+{VOWEL}     { add_tokens("vowel", yytext); vowels++; }
+{CONSONANT} { add_tokens("consonant", yytext); consonants++; }
+[ \t\n0-9.,;!?] ;
+.           ;
+
+%%
+
+int main(int argc, char* argv[]) {
+    if (argc < 2) {
+        printf("Usage: %s <filename>\n", argv[0]);
+        return 1;
+    }
+
+    FILE *fp = fopen(argv[1], "r");
+    if (!fp) {
+        perror("File open error");
+        return 1;
+    }
+
+    yyin = fp;
     yylex();
-    #ifdef COUNT_LINES
-        printf("Lines:       %d\n", line_count);
-    #endif
-    #ifdef COUNT_WORDS
-        printf("Words:       %d\n", word_count);
-    #endif
-    #ifdef COUNT_CHARS
-        printf("Characters:  %d\n", char_count);
-    #endif
-    #if defined(COUNT_VOWELS) && defined(COUNT_CONSONANTS)
-        printf("Vowels:      %d\n", vowel_count);
-        printf("Consonants:  %d\n", consonant_count);
-    #endif
-    #ifdef COUNT_COMMENTS
-        printf("Comments:    %d\n", comment_count);
-    #endif
+    fclose(fp);
+
+    printf("\n--- Vowels and Consonants ---\n");
+    printf("%-15s | %-15s\n", "Type", "Lexeme");
+    printf("---------------+----------------\n");
+    int i;
+    for ( i = 0; i < token_count; ++i) {
+        printf("%-15s | %-15s\n", tokens[i].type, tokens[i].lexeme);
+    }
+
+    printf("\nTotal Vowels: %d\n", vowels);
+    printf("Total Consonants: %d\n", consonants);
     return 0;
 }
