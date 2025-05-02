@@ -1,0 +1,18 @@
+%{
+#include <stdio.h>
+int count = 0;
+char *target = "hello";
+%}
+
+%%
+{target}        { count++; }
+.|\n            ; // Ignore other characters
+%%
+
+int yywrap() { return 1; }
+
+int main() {
+    yylex();
+    printf("Total occurrences of \"%s\": %d\n", target, count);
+    return 0;
+}

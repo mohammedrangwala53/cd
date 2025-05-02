@@ -1,0 +1,36 @@
+%{
+#include <stdio.h>
+int line = 1;
+%}
+
+
+
+%%
+
+"public"|"class"|"static"|"void"|"int"|"String"|"System"|"out"|"println"   { printf("Line %d: Keyword\t\t%s\n", line, yytext); }
+[a-zA-Z_][a-zA-Z0-9_]*                                                     { printf("Line %d: Identifier\t\t%s\n", line, yytext); }
+[0-9]+                                                                     { printf("Line %d: Number\t\t%s\n", line, yytext); }
+\"([^\\\"]|\\.)*\"                                                         { printf("Line %d: String\t\t%s\n", line, yytext); }
+"="|"+"|"-"|"*"|"/"|"=="                                                   { printf("Line %d: Operator\t\t%s\n", line, yytext); }
+"{"|"}"|"("|")"|";"|","|"."                                                { printf("Line %d: Symbol\t\t%s\n", line, yytext); }
+
+\n            { line++; }
+[ \t]+        ; // Skip spaces and tabs
+.              { printf("Line %d: Unknown token: %s\n", line, yytext); }
+%%
+
+int yywrap() { return 1; }
+int main() {
+    yylex();
+    return 0;
+}
+
+
+public class Main {
+    public static void main(String[] args) {
+        int x = 10;
+        if (x > 5) {
+            System.out.println("Hello World!");
+        }
+    }
+}
